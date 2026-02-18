@@ -1,0 +1,141 @@
+@{
+    ViewData["Title"] = "Συνομιλία με " + ((dynamic)ViewBag.OtherUser).Username;
+    var messages = ViewBag.Messages as List<dynamic> ?? new List<dynamic>();
+    var otherUser = ViewBag.OtherUser;
+    int currentUserId = ViewBag.CurrentUserId;
+}
+
+<a asp-action="Index" class="btn btn-outline-secondary mb-3">
+    <i class="bi bi-arrow-left"></i> Πίσω
+</a>
+
+<div class="card">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <div>
+            <i class="bi bi-person-circle"></i>
+            <strong>@otherUser.Username</strong>
+        </div>
+        <small>@messages.Count μηνύματα</small>
+    </div>
+
+    <div class="card-body chat-container" id="chatContainer">
+        @if (messages.Count == 0)
+        {
+            <div class="text-center text-muted py-4">
+                <i class="bi bi-chat display-4"></i>
+                <p class="mt-2">Δεν υπάρχουν μηνύματα ακόμα. Ξεκινήστε τη συνομιλία!</p>
+            </div>
+        }
+        else
+        {
+            string lastDateLabel = "";
+            foreach (var msg in messages)
+            {
+                DateTime msgTime = (DateTime)msg.CreatedAt;
+                var today = DateTime.UtcNow.Date;
+                string dateLabel;
+                if (msgTime.Date == today)
+                    dateLabel = "Σήμερα";
+                else if (msgTime.Date == today.AddDays(-1))
+                    dateLabel = "Χθες";
+                else
+                    dateLabel = msgTime.ToString("dddd, dd MMMM yyyy");
+
+                if (dateLabel != lastDateLabel)
+                {
+                    lastDateLabel = dateLabel;
+                    <div class="text-center my-3">
+                        <span class="badge bg-light text-dark px-3 py-2" style="font-size: 0.8rem;">
+                            <i class="bi bi-calendar3"></i> @dateLabel
+                        </span>
+                    </div>
+                }
+
+                <div class="d-flex @((bool)msg.IsSentByMe ? "justify-content-end" : "justify-content-start") mb-2">
+                    <div style="max-width: 65%;">
+                        <div class="message-bubble @((bool)msg.IsSentByMe ? "message-sent" : "message-received")">
+                            @msg.Content
+                        </div>
+                        <div class="@((bool)msg.IsSentByMe ? "text-end" : "text-start")">
+                            <small class="text-muted" style="font-size: 0.7rem;">@msgTime.ToString("HH:mm")</small>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    <div class="card-footer">
+        <form id="chatForm" class="d-flex gap-2">
+            <input type="text" id="messageInput" class="form-control" placeholder="Γράψτε μήνυμα..." autocomplete="off" />
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-send"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const otherUserId = @otherUser.Id;
+        const chatContainer = document.getElementById('chatContainer');
+
+        // Scroll to bottom
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        // Handle form submit
+        document.getElementById('chatForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
+            if (!content) return;
+
+            fetch('/Message/Send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: `content=${encodeURIComponent(content)}&receiverIds=${otherUserId}`
+            })
+            .then(r => r.json())
+            .then(data => {
+                appendMessage(content, true, new Date());
+                input.value = '';
+            });
+        });
+
+        // Real-time receive
+        function onReceiveMessage(data) {
+            if (data.senderId == otherUserId) {
+                appendMessage(data.content, false, data.createdAt ? new Date(data.createdAt) : new Date());
+            }
+        }
+
+        function appendMessage(content, isMine, timestamp) {
+            // Check if we need a new date separator
+            const now = timestamp || new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const mins = String(now.getMinutes()).padStart(2, '0');
+            const timeStr = hours + ':' + mins;
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'd-flex mb-2 ' + (isMine ? 'justify-content-end' : 'justify-content-start');
+            wrapper.innerHTML = `
+                <div style="max-width: 65%;">
+                    <div class="message-bubble ${isMine ? 'message-sent' : 'message-received'}">${escapeHtml(content)}</div>
+                    <div class="${isMine ? 'text-end' : 'text-start'}">
+                        <small class="text-muted" style="font-size: 0.7rem;">${timeStr}</small>
+                    </div>
+                </div>`;
+            chatContainer.appendChild(wrapper);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const d = document.createElement('div');
+            d.textContent = text;
+            return d.innerHTML;
+        }
+    </script>
+}

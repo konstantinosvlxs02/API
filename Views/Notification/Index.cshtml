@@ -1,0 +1,72 @@
+@model List<Notification>
+@{
+    ViewData["Title"] = "Ειδοποιήσεις";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="bi bi-bell"></i> Ειδοποιήσεις</h3>
+    @if (Model.Any(n => !n.IsRead))
+    {
+        <form method="post" asp-action="MarkAllRead">
+            <button type="submit" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-check-all"></i> Σήμανση όλων ως αναγνωσμένα
+            </button>
+        </form>
+    }
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="text-center text-muted py-5">
+        <i class="bi bi-bell-slash display-1"></i>
+        <p class="mt-3">Δεν έχετε ειδοποιήσεις.</p>
+    </div>
+}
+else
+{
+    <div class="list-group">
+        @foreach (var notif in Model)
+        {
+            <div class="list-group-item notification-item @(!notif.IsRead ? "unread" : "")">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-2">
+                            @if (notif.Type == "message")
+                            {
+                                <i class="bi bi-chat-dots text-primary"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-bell text-warning"></i>
+                            }
+                            <strong>@notif.Title</strong>
+                            @if (!notif.IsRead)
+                            {
+                                <span class="badge bg-warning text-dark">Νέο</span>
+                            }
+                        </div>
+                        <p class="mb-1 mt-1">@notif.Content</p>
+                        <small class="text-muted">
+                            <i class="bi bi-clock"></i> @notif.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                        </small>
+                    </div>
+                    <div class="d-flex gap-1">
+                        @if (!notif.IsRead)
+                        {
+                            <form method="post" asp-action="MarkRead" asp-route-id="@notif.Id">
+                                <button type="submit" class="btn btn-sm btn-outline-success" title="Σήμανση ως αναγνωσμένο">
+                                    <i class="bi bi-check"></i>
+                                </button>
+                            </form>
+                        }
+                        <form method="post" asp-action="Delete" asp-route-id="@notif.Id">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Διαγραφή">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

@@ -1,0 +1,46 @@
+@{
+    ViewData["Title"] = "Εγγραφή";
+}
+
+<div class="login-container">
+    <div class="card">
+        <div class="card-body p-4">
+            <h3 class="card-title text-center mb-4">
+                <i class="bi bi-person-plus"></i> Εγγραφή
+            </h3>
+
+            <form method="post" asp-action="Register">
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" class="form-control" placeholder="Εισάγετε username" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" placeholder="Εισάγετε email" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="Εισάγετε password" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Επιβεβαίωση Password</label>
+                    <input type="password" name="confirmPassword" class="form-control" placeholder="Επαναλάβετε password" required />
+                </div>
+                <button type="submit" class="btn btn-success w-100 mb-3">
+                    <i class="bi bi-person-check"></i> Εγγραφή
+                </button>
+            </form>
+
+            <hr />
+
+            <a href="@Url.Action("GoogleLogin", "Account")" class="btn btn-outline-danger w-100 mb-3">
+                <i class="bi bi-google"></i> Εγγραφή με Google
+            </a>
+
+            <p class="text-center mb-0">
+                Έχετε ήδη λογαριασμό;
+                <a asp-action="Login">Σύνδεση</a>
+            </p>
+        </div>
+    </div>
+</div>

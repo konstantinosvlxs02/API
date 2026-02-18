@@ -1,0 +1,102 @@
+@model List<Post>
+@{
+    ViewData["Title"] = "Posts";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="bi bi-file-earmark-post"></i> Posts</h3>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Νέο Post
+    </a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <form method="get" asp-action="Index" class="input-group">
+            <input type="text" name="search" class="form-control" placeholder="Αναζήτηση posts..." value="@ViewBag.Search" />
+            <button type="submit" class="btn btn-outline-primary">
+                <i class="bi bi-search"></i>
+            </button>
+        </form>
+    </div>
+    <div class="col-md-6">
+        <div class="d-flex gap-2 flex-wrap">
+            @if (ViewBag.Categories != null)
+            {
+                @foreach (var cat in (List<Category>)ViewBag.Categories)
+                {
+                    <a asp-action="ByCategory" asp-route-id="@cat.Id" class="btn btn-sm btn-outline-secondary">
+                        @cat.Name
+                    </a>
+                }
+            }
+            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#newCategoryModal">
+                <i class="bi bi-plus"></i> Κατηγορία
+            </button>
+        </div>
+    </div>
+</div>
+
+@if (ViewBag.CategoryName != null)
+{
+    <div class="alert alert-info">
+        Κατηγορία: <strong>@ViewBag.CategoryName</strong>
+        <a asp-action="Index" class="ms-2">Εμφάνιση όλων</a>
+    </div>
+}
+
+@if (Model.Count == 0)
+{
+    <div class="text-center text-muted py-5">
+        <i class="bi bi-inbox display-1"></i>
+        <p class="mt-3">Δεν υπάρχουν posts.</p>
+    </div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var post in Model)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="card post-card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">@post.Title</h5>
+                        <p class="card-text text-muted">
+                            @(post.Content.Length > 150 ? post.Content.Substring(0, 150) + "..." : post.Content)
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-person"></i> @post.User?.Username
+                            <br />
+                            <i class="bi bi-clock"></i> @post.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                        </small>
+                        <a asp-action="Details" asp-route-id="@post.Id" class="btn btn-sm btn-outline-primary">
+                            Περισσότερα
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<!-- New Category Modal -->
+<div class="modal fade" id="newCategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-action="CreateCategory">
+                <div class="modal-header">
+                    <h5 class="modal-title">Νέα Κατηγορία</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" name="name" class="form-control" placeholder="Όνομα κατηγορίας" required />
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Δημιουργία</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,66 @@
+@{
+    ViewData["Title"] = "Μηνύματα";
+    var conversations = ViewBag.Conversations as List<dynamic> ?? new List<dynamic>();
+    var contacts = ViewBag.Contacts as List<Contact> ?? new List<Contact>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="bi bi-chat-dots"></i> Μηνύματα</h3>
+    <a asp-action="NewMessage" class="btn btn-primary">
+        <i class="bi bi-envelope-plus"></i> Νέο Μήνυμα
+    </a>
+</div>
+
+<div class="row">
+    <!-- Conversations List -->
+    <div class="col-md-12">
+        @if (conversations.Count == 0)
+        {
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-chat display-1"></i>
+                <p class="mt-3">Δεν έχετε συνομιλίες ακόμα.</p>
+                <a asp-action="NewMessage" class="btn btn-primary mt-2">Ξεκινήστε μια συνομιλία</a>
+            </div>
+        }
+        else
+        {
+            <div class="list-group">
+                @foreach (var conv in conversations)
+                {
+                    var timeStr = "";
+                    DateTime msgTime = (DateTime)conv.LastMessageTime;
+                    if (msgTime != DateTime.MinValue)
+                    {
+                        var today = DateTime.UtcNow.Date;
+                        if (msgTime.Date == today)
+                            timeStr = msgTime.ToString("HH:mm");
+                        else if (msgTime.Date == today.AddDays(-1))
+                            timeStr = "Χθες " + msgTime.ToString("HH:mm");
+                        else
+                            timeStr = msgTime.ToString("dd/MM/yyyy HH:mm");
+                    }
+
+                    <a asp-action="Conversation" asp-route-userId="@conv.UserId"
+                       class="list-group-item list-group-item-action conversation-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-person-circle me-2"></i>
+                            <strong>@conv.Username</strong>
+                            <br />
+                            <small class="text-muted">@(((string)conv.LastMessage).Length > 60 ? ((string)conv.LastMessage).Substring(0, 60) + "..." : conv.LastMessage)</small>
+                        </div>
+                        <div class="text-end">
+                            @if (!string.IsNullOrEmpty(timeStr))
+                            {
+                                <small class="text-muted d-block">@timeStr</small>
+                            }
+                            @if ((int)conv.UnreadCount > 0)
+                            {
+                                <span class="badge bg-danger rounded-pill mt-1">@conv.UnreadCount</span>
+                            }
+                        </div>
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</div>

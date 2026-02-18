@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Σύνδεση";
+}
+
+<div class="login-container">
+    <div class="card">
+        <div class="card-body p-4">
+            <h3 class="card-title text-center mb-4">
+                <i class="bi bi-box-arrow-in-right"></i> Σύνδεση
+            </h3>
+
+            <form method="post" asp-action="Login">
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" class="form-control" placeholder="Εισάγετε username" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="Εισάγετε password" required />
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mb-3">
+                    <i class="bi bi-key"></i> Σύνδεση
+                </button>
+            </form>
+
+            <hr />
+
+            <a href="@Url.Action("GoogleLogin", "Account")" class="btn btn-outline-danger w-100 mb-3">
+                <i class="bi bi-google"></i> Σύνδεση με Google
+            </a>
+
+            <p class="text-center mb-0">
+                Δεν έχετε λογαριασμό;
+                <a asp-action="Register">Εγγραφή</a>
+            </p>
+        </div>
+    </div>
+</div>

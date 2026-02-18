@@ -1,0 +1,72 @@
+@{
+    ViewData["Title"] = "Νέο Μήνυμα";
+    var contacts = ViewBag.Contacts as List<Contact> ?? new List<Contact>();
+    var allUsers = ViewBag.AllUsers as List<User> ?? new List<User>();
+}
+
+<a asp-action="Index" class="btn btn-outline-secondary mb-3">
+    <i class="bi bi-arrow-left"></i> Πίσω
+</a>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-4">
+                    <i class="bi bi-envelope-plus"></i> Νέο Μήνυμα
+                </h4>
+
+                <form method="post" asp-action="Send">
+                    <div class="mb-3">
+                        <label class="form-label">Παραλήπτες</label>
+                        <select name="receiverIds" class="form-select" multiple required size="5">
+                            @if (contacts.Any())
+                            {
+                                <optgroup label="Επαφές">
+                                    @foreach (var contact in contacts)
+                                    {
+                                        <option value="@contact.ContactUserId">@contact.Name (@contact.ContactUser?.Username)</option>
+                                    }
+                                </optgroup>
+                            }
+                            <optgroup label="Όλοι οι χρήστες">
+                                @foreach (var user in allUsers)
+                                {
+                                    <option value="@user.Id">@user.Username</option>
+                                }
+                            </optgroup>
+                        </select>
+                        <small class="text-muted">Κρατήστε Ctrl για επιλογή πολλαπλών παραληπτών.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Μήνυμα</label>
+                        <textarea name="content" class="form-control" rows="5" placeholder="Γράψτε το μήνυμά σας..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> Αποστολή
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Convert multiple select values to comma-separated string
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const select = this.querySelector('select[name="receiverIds"]');
+            const selected = Array.from(select.selectedOptions).map(o => o.value);
+            
+            // Create hidden input with comma-separated values
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = 'receiverIds';
+            hidden.value = selected.join(',');
+            this.appendChild(hidden);
+            
+            // Remove the select name to avoid duplicate
+            select.removeAttribute('name');
+        });
+    </script>
+}
